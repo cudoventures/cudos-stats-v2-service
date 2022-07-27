@@ -13,10 +13,10 @@ Run the docker image:\
 ## Available endpoints:
 
 ### For Cosmos networks explorers who look for default mint and bank module endpoints:
-http://127.0.0.1:3001/cosmos/mint/v1beta1/params\
-http://127.0.0.1:3001/cosmos/mint/v1beta1/annual_provisions\
-http://127.0.0.1:3001/cosmos/mint/v1beta1/inflation\
-http://127.0.0.1:3001/cosmos/bank/v1beta1/supply
+http://127.0.0.1:3001/cosmos/mint/v1beta1/params  
+http://127.0.0.1:3001/cosmos/mint/v1beta1/annual_provisions  
+http://127.0.0.1:3001/cosmos/mint/v1beta1/inflation  
+http://127.0.0.1:3001/cosmos/bank/v1beta1/supply  
 
 ### For coinmarketcap and other similar integrations:
 http://127.0.0.1:3001/circulating-supply - coinmarketcap endpoint that is returning current circulating supply as decimal.\
