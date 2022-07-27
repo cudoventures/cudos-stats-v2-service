@@ -1,0 +1,30 @@
+port: 3000
+genesis:
+  initial_height: 1
+  norm_time_passed: 0.53172694105988
+  blocks_per_day: 17280
+  mint_denom: acudos
+cudos:
+  node:
+    rpc:
+        client_name: cudos-1
+        address: http://cluster-2-sentry-1.hosts.cudos.org:26657
+        max_connections: 20
+    grpc:
+        address: http://cluster-2-sentry-1.hosts.cudos.org:9090
+        insecure: true
+eth:
+  node: https://rpc.ankr.com/eth
+  token_address: 0x817bbDbC3e8A1204f3691d14bB44992841e3dB35
+  accounts:
+      - 0xe4422BCDc20E93014F67b73d4120b878c4246804
+      - 0x03638Df94502181386a9A8b0382652D6Ab3E5B08
+      - 0x5F321d2ED6772B64d33Fce6942504cdCAB1Ca1da
+      - 0x924A59d9EBE85E37Ef9Fd56714F00094395EABa3
+      - 0xb3ccb8FB2533E51893915908CEb85763CeaeA97b
+storage:
+  apr_key: apr
+  annual_provisions_key: annual_provisions
+  inflation_key: inflation
+  all_tokens_supply_key: all_tokens_supply
+  supply_key: supply
