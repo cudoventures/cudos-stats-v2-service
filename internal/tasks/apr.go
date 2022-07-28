@@ -7,7 +7,7 @@ import (
 	"time"
 
 	cudoMintTypes "github.com/CudoVentures/cudos-node/x/cudoMint/types"
-	"github.com/CudoVentures/cudos-stats-v2-service/config"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/forbole/juno/v2/node/remote"
 )

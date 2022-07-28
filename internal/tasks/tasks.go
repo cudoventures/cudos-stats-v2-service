@@ -7,8 +7,8 @@ import (
 	"time"
 
 	cudoMintTypes "github.com/CudoVentures/cudos-node/x/cudoMint/types"
-	"github.com/CudoVentures/cudos-stats-v2-service/config"
-	"github.com/CudoVentures/cudos-stats-v2-service/erc20"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/erc20"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"

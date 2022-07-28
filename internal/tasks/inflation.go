@@ -8,7 +8,7 @@ import (
 	"time"
 
 	cudoMintTypes "github.com/CudoVentures/cudos-node/x/cudoMint/types"
-	"github.com/CudoVentures/cudos-stats-v2-service/config"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/ethereum/go-ethereum/ethclient"

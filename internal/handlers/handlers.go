@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"net/http"
 
-	"github.com/CudoVentures/cudos-stats-v2-service/config"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
 	"github.com/rs/zerolog/log"
 )
 

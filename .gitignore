@@ -20,5 +20,4 @@
 # Go workspace file
 go.work
 
-stats-service
 cmd/stats-service/stats-service
