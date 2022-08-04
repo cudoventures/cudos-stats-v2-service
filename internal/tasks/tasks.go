@@ -9,8 +9,8 @@ import (
 	cudoMintTypes "github.com/CudoVentures/cudos-node/x/cudoMint/types"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/erc20"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/rest_clients/bank"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,7 +20,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func ExecuteTasks(cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient banktypes.QueryClient, storage keyValueStorage) error {
+func ExecuteTasks(cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient bankQueryClient, storage keyValueStorage) error {
 	genesisState, err := createGenesisState(cfg)
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func ExecuteTasks(cfg config.Config, nodeClient *remote.Node, stakingClient stak
 	return nil
 }
 
-func RegisterTasks(cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient banktypes.QueryClient, storage keyValueStorage) error {
+func RegisterTasks(cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient bankQueryClient, storage keyValueStorage) error {
 	scheduler := gocron.NewScheduler(time.UTC)
 
 	genesisState, err := createGenesisState(cfg)
@@ -200,10 +200,14 @@ var (
 )
 
 const ethBlocksPerDay = 5760
-const inflationSinceDays = 30 * 3
 const maxSupply = "10000000000000000000000000000" // 10 billion
 
 type keyValueStorage interface {
 	SetValue(key, value string) error
 	GetOrDefaultValue(key, defaultValue string) (string, error)
+}
+
+type bankQueryClient interface {
+	GetTotalSupply(ctx context.Context, height int64) (bank.TotalSupplyResponse, error)
+	GetBalance(ctx context.Context, height int64, address, denom string) (sdk.Coin, error)
 }

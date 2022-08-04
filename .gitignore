@@ -21,3 +21,4 @@
 go.work
 
 cmd/stats-service/stats-service
+stats-service

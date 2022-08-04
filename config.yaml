@@ -4,15 +4,18 @@ genesis:
   norm_time_passed: 0.53172694105988
   blocks_per_day: 17280
   mint_denom: acudos
+  gravity_account_address: cudos16n3lc7cywa68mg50qhp847034w88pntq8823tx
 cudos:
   node:
     rpc:
-        client_name: cudos-1
-        address: http://cluster-2-sentry-1.hosts.cudos.org:26657
-        max_connections: 20
+      client_name: cudos-1
+      address: http://cluster-2-sentry-1.hosts.cudos.org:26657
+      max_connections: 20
     grpc:
-        address: http://cluster-2-sentry-1.hosts.cudos.org:9090
-        insecure: true
+      address: http://cluster-2-sentry-1.hosts.cudos.org:9090
+      insecure: true
+  rest:
+    address: http://cluster-2-sentry-1.hosts.cudos.org:1317
 eth:
   node: https://rpc.ankr.com/eth
   token_address: 0x817bbDbC3e8A1204f3691d14bB44992841e3dB35
@@ -22,6 +25,9 @@ eth:
       - 0x5F321d2ED6772B64d33Fce6942504cdCAB1Ca1da
       - 0x924A59d9EBE85E37Ef9Fd56714F00094395EABa3
       - 0xb3ccb8FB2533E51893915908CEb85763CeaeA97b
+      - 0xf3fb61dac93bea3aa6eb246e8995a76c9e8248f4
+calculation:
+  inflation_since_days: 50
 storage:
   apr_key: apr
   annual_provisions_key: annual_provisions
