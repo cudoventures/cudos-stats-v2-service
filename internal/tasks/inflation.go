@@ -9,7 +9,7 @@ import (
 
 	cudoMintTypes "github.com/CudoVentures/cudos-node/x/cudoMint/types"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
-	"github.com/CudoVentures/cudos-stats-v2-service/internal/rest_clients/bank"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/rest/bank"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/forbole/juno/v2/node/remote"

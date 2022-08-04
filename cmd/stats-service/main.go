@@ -7,7 +7,7 @@ import (
 	cudosapp "github.com/CudoVentures/cudos-node/app"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/handlers"
-	bankRestClient "github.com/CudoVentures/cudos-stats-v2-service/internal/rest_clients/bank"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/rest/bank"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/storage"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/tasks"
 	"github.com/cosmos/cosmos-sdk/simapp/params"
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	stakingClient := stakingtypes.NewQueryClient(source.GrpcConn)
-	bankingRestClient := bankRestClient.NewRestClient(cfg.Cudos.REST.Address)
+	bankingRestClient := bank.NewRestClient(cfg.Cudos.REST.Address)
 
 	keyValueStorage := storage.NewStorage()
 
