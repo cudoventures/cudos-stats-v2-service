@@ -27,8 +27,8 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 			return fmt.Errorf("faield to get latest eth block: %s", err)
 		}
 
-		inflationEthStartBlock := big.NewInt(latestEthBlock.Int64() - (inflationSinceDays * ethBlocksPerDay))
-		fmt.Printf("inflationEthStartBlock: %s, latestEthBlock: %s\r\n", inflationEthStartBlock.String(), latestEthBlock.String())
+		inflationEthStartBlock := big.NewInt(latestEthBlock.Int64() - (cfg.Calculation.InflationSinceDays * ethBlocksPerDay))
+
 		ethStartSupply, err := getEthCirculatingSupplyAtHeight(inflationEthStartBlock, client, cfg)
 		if err != nil {
 			return err
@@ -45,7 +45,7 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 		}
 
 		inflationCudosStartBlock := int64(0)
-		inflationSinceDaysValue := int64(inflationSinceDays)
+		inflationSinceDaysValue := int64(cfg.Calculation.InflationSinceDays)
 
 		// TODO: This can be removed after the chain is working for more than INFLATION_SINCE_DAYS
 
@@ -63,9 +63,6 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 		if err != nil {
 			return err
 		}
-
-		fmt.Printf("ethStartSupply: %s, cudosStartSupply: %s, ethCurrentSupply: %s, cudosCurrentSupply: %s",
-			ethStartSupply.String(), cudosStartSupply.String(), ethCurrentSupply.String(), cudosCurrentSupply.String())
 
 		startTotalSupply := ethStartSupply.Add(cudosStartSupply)
 		currentTotalSupply := ethCurrentSupply.Add(cudosCurrentSupply)
@@ -121,9 +118,7 @@ func getEthCirculatingSupplyAtHeight(height *big.Int, client *ethclient.Client, 
 
 	totalSupply, _ := sdk.NewIntFromString(maxSupply)
 
-	res := totalSupply.Sub(ethAccountsBalanceInt)
-	fmt.Printf("getEthCirculatingSupplyAtHeight res: %s, totalSupply: %s, ethAccountsBalanceInt: %s, height: %s\r\n", res.String(), totalSupply.String(), ethAccountsBalanceInt.String(), height.String())
-	return res, nil
+	return totalSupply.Sub(ethAccountsBalanceInt), nil
 }
 
 func getCudosNetworkCirculatingSupplyAtHeight(height int64, bankingClient bankQueryClient, cfg config.Config) (sdk.Int, error) {
@@ -165,7 +160,6 @@ func getCudosNetworkCirculatingSupplyAtHeight(height int64, bankingClient bankQu
 
 	for i := 0; i < len(totalSupply.Supply); i++ {
 		if totalSupply.Supply[i].Denom == cfg.Genesis.MintDenom {
-			fmt.Printf("getCudosNetworkCirculatingSupplyAtHeight totalSupply: %s, gravityModuleBalance: %s, height: %d\r\n", totalSupply.Supply[i].Amount.String(), gravityModuleBalance.Amount.String(), height)
 			return totalSupply.Supply[i].Amount.Sub(gravityModuleBalance.Amount), nil
 		}
 	}

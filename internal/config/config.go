@@ -45,6 +45,9 @@ type Config struct {
 		TokenAddress string   `yaml:"token_address"`
 		EthAccounts  []string `yaml:"accounts"`
 	} `yaml:"eth"`
+	Calculation struct {
+		InflationSinceDays int64 `yaml:"inflation_since_days"`
+	} `yaml:"calculation"`
 	Storage struct {
 		APRKey              string `yaml:"apr_key"`
 		AnnualProvisionsKey string `yaml:"annual_provisions"`

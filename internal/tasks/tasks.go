@@ -73,30 +73,17 @@ func getEthAccountsBalanceAtBlock(client *ethclient.Client, tokenAddress string,
 	totalBalance := big.NewInt(0)
 
 	for _, account := range accounts {
-		var balance *big.Int
-		var err error
-		// TODO: Should be removed when we dont need to look back to so old blocks where Gravity.sol is empty
-		for {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 
-			balance, err = instance.BalanceOf(&bind.CallOpts{
-				BlockNumber: block,
-				Context:     ctx,
-			}, common.HexToAddress(account))
+		balance, err := instance.BalanceOf(&bind.CallOpts{
+			BlockNumber: block,
+			Context:     ctx,
+		}, common.HexToAddress(account))
 
-			if err != nil {
-				return nil, err
-			}
-
-			if balance.Int64() != 0 {
-				break
-			}
-
-			block = big.NewInt(block.Int64() + 10000)
+		if err != nil {
+			return nil, err
 		}
-
-		fmt.Printf("getEthAccountsBalanceAtBlock: account: %s, balance: %s, block: %s\r\n", account, balance, block.String())
 
 		totalBalance.Add(totalBalance, balance)
 	}
@@ -213,7 +200,6 @@ var (
 )
 
 const ethBlocksPerDay = 5760
-const inflationSinceDays = 30 * 3
 const maxSupply = "10000000000000000000000000000" // 10 billion
 
 type keyValueStorage interface {
