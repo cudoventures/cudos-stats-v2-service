@@ -7,12 +7,12 @@ import (
 	cudosapp "github.com/CudoVentures/cudos-node/app"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/handlers"
+	bankRestClient "github.com/CudoVentures/cudos-stats-v2-service/internal/rest_clients/bank"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/storage"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/tasks"
 	"github.com/cosmos/cosmos-sdk/simapp/params"
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/forbole/juno/v2/node/remote"
 	"github.com/rs/zerolog/log"
@@ -42,20 +42,20 @@ func main() {
 	}
 
 	stakingClient := stakingtypes.NewQueryClient(source.GrpcConn)
-	bankingClient := banktypes.NewQueryClient(source.GrpcConn)
+	bankingRestClient := bankRestClient.NewRestClient(cfg.Cudos.REST.Address)
 
 	keyValueStorage := storage.NewStorage()
 
 	log.Info().Msg("Executing tasks")
 
-	if err := tasks.ExecuteTasks(cfg, nodeClient, stakingClient, bankingClient, keyValueStorage); err != nil {
+	if err := tasks.ExecuteTasks(cfg, nodeClient, stakingClient, bankingRestClient, keyValueStorage); err != nil {
 		log.Fatal().Err(fmt.Errorf("error while executing tasks: %s", err)).Send()
 		return
 	}
 
 	log.Info().Msg("Registering tasks")
 
-	if err := tasks.RegisterTasks(cfg, nodeClient, stakingClient, bankingClient, keyValueStorage); err != nil {
+	if err := tasks.RegisterTasks(cfg, nodeClient, stakingClient, bankingRestClient, keyValueStorage); err != nil {
 		log.Fatal().Err(fmt.Errorf("error while registering tasks: %s", err)).Send()
 		return
 	}
