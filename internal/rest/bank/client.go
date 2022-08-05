@@ -67,7 +67,7 @@ func (brc bankRESTClient) get(ctx context.Context, uri string, height int64) (st
 		return "", err
 	}
 
-	resp.Body.Close()
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
