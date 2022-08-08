@@ -30,7 +30,11 @@ calculation:
   inflation_since_days: 50
 storage:
   apr_key: apr
+  apr_height_key: apr_height
   annual_provisions_key: annual_provisions
   inflation_key: inflation
+  inflation_height_key: inflation_height
   all_tokens_supply_key: all_tokens_supply
   supply_key: supply
+  supply_height_key: supply_height
+

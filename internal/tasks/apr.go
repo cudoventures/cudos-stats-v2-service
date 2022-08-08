@@ -46,6 +46,10 @@ func getCalculateAPRHandler(genesisState cudoMintTypes.GenesisState, cfg config.
 			return fmt.Errorf("failed to set value %s for key %s", apr.String(), cfg.Storage.APRKey)
 		}
 
+		if err := storage.SetInt64Value(cfg.Storage.APRHeightKey, latestBlockHeight); err != nil {
+			return fmt.Errorf("failed to set value %d for key %s", latestBlockHeight, cfg.Storage.APRHeightKey)
+		}
+
 		annualProvisions := mintAmountInt.ToDec().MulInt64(12)
 
 		if err := storage.SetValue(cfg.Storage.AnnualProvisionsKey, annualProvisions.String()); err != nil {

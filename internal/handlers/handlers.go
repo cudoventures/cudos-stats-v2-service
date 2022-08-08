@@ -14,15 +14,13 @@ func GetCircSupplyTextHandler(cfg config.Config, storage keyValueStorage) func(h
 	return func(w http.ResponseWriter, r *http.Request) {
 		supply, err := storage.GetValue(cfg.Storage.SupplyKey)
 		if err != nil {
-			log.Error().Err(err).Send()
-			w.WriteHeader(http.StatusBadRequest)
+			badRequest(w, err)
 			return
 		}
 
 		formattedSupply, err := formatSupply(supply)
 		if err != nil {
-			log.Error().Err(err).Send()
-			w.WriteHeader(http.StatusBadRequest)
+			badRequest(w, err)
 			return
 		}
 
@@ -30,8 +28,7 @@ func GetCircSupplyTextHandler(cfg config.Config, storage keyValueStorage) func(h
 		w.WriteHeader(http.StatusOK)
 
 		if _, err := w.Write([]byte(formattedSupply)); err != nil {
-			log.Error().Err(err).Send()
-			w.WriteHeader(http.StatusBadRequest)
+			badRequest(w, err)
 			return
 		}
 	}
@@ -41,22 +38,76 @@ func GetCircSupplyJSONHandler(cfg config.Config, storage keyValueStorage) func(h
 	return func(w http.ResponseWriter, r *http.Request) {
 		supply, err := storage.GetValue(cfg.Storage.SupplyKey)
 		if err != nil {
-			log.Error().Err(err).Send()
-			w.WriteHeader(http.StatusBadRequest)
+			badRequest(w, err)
 			return
 		}
 
 		formattedSupply, err := formatSupply(supply)
 		if err != nil {
-			log.Error().Err(err).Send()
-			w.WriteHeader(http.StatusBadRequest)
+			badRequest(w, err)
 			return
 		}
 
 		setHeaders(w)
 
 		if err := json.NewEncoder(w).Encode(supplyResponse{Supply: formattedSupply}); err != nil {
-			log.Error().Err(err).Send()
+			badRequest(w, err)
+		}
+	}
+}
+
+func GetStatsHandler(cfg config.Config, storage keyValueStorage) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		supply, err := storage.GetValue(cfg.Storage.SupplyKey)
+		if err != nil {
+			badRequest(w, err)
+			return
+		}
+
+		formattedSupply, err := formatSupply(supply)
+		if err != nil {
+			badRequest(w, err)
+			return
+		}
+
+		supplyHeight, err := storage.GetInt64Value(cfg.Storage.SupplyHeightKey)
+		if err != nil {
+			badRequest(w, err)
+			return
+		}
+
+		inflation, err := storage.GetValue(cfg.Storage.InflationKey)
+		if err != nil {
+			badRequest(w, err)
+			return
+		}
+
+		inflationHeight, err := storage.GetInt64Value(cfg.Storage.InflationHeightKey)
+		if err != nil {
+			badRequest(w, err)
+			return
+		}
+
+		apr, err := storage.GetValue(cfg.Storage.APRKey)
+		if err != nil {
+			badRequest(w, err)
+			return
+		}
+
+		aprHeight, err := storage.GetInt64Value(cfg.Storage.APRHeightKey)
+		if err != nil {
+			badRequest(w, err)
+			return
+		}
+
+		setHeaders(w)
+
+		if err := json.NewEncoder(w).Encode(statsResponse{
+			Inflation: valueAtHeight{Value: inflation, Height: inflationHeight},
+			APR:       valueAtHeight{Value: apr, Height: aprHeight},
+			Supply:    valueAtHeight{Value: formattedSupply, Height: supplyHeight},
+		}); err != nil {
+			badRequest(w, err)
 		}
 	}
 }
@@ -65,15 +116,14 @@ func GetSupplyHandler(cfg config.Config, storage keyValueStorage) func(http.Resp
 	return func(w http.ResponseWriter, r *http.Request) {
 		supply, err := storage.GetValue(cfg.Storage.AllTokensSupplyKey)
 		if err != nil {
-			log.Error().Err(err).Send()
-			w.WriteHeader(http.StatusBadRequest)
+			badRequest(w, err)
 			return
 		}
 
 		setHeaders(w)
 
 		if _, err := w.Write([]byte(supply)); err != nil {
-			log.Error().Err(err).Send()
+			badRequest(w, err)
 		}
 	}
 }
@@ -82,15 +132,14 @@ func GetAPRHandler(cfg config.Config, storage keyValueStorage) func(http.Respons
 	return func(w http.ResponseWriter, r *http.Request) {
 		apr, err := storage.GetValue(cfg.Storage.APRKey)
 		if err != nil {
-			log.Error().Err(err).Send()
-			w.WriteHeader(http.StatusBadRequest)
+			badRequest(w, err)
 			return
 		}
 
 		setHeaders(w)
 
 		if err := json.NewEncoder(w).Encode(aprResponse{APR: apr}); err != nil {
-			log.Error().Err(err).Send()
+			badRequest(w, err)
 		}
 	}
 }
@@ -99,15 +148,14 @@ func GetAnnualProvisionsHandler(cfg config.Config, storage keyValueStorage) func
 	return func(w http.ResponseWriter, r *http.Request) {
 		annualProvisions, err := storage.GetValue(cfg.Storage.AnnualProvisionsKey)
 		if err != nil {
-			log.Error().Err(err).Send()
-			w.WriteHeader(http.StatusBadRequest)
+			badRequest(w, err)
 			return
 		}
 
 		setHeaders(w)
 
 		if err := json.NewEncoder(w).Encode(annualProvisionsResponse{AnnualProvisions: annualProvisions}); err != nil {
-			log.Error().Err(err).Send()
+			badRequest(w, err)
 		}
 	}
 }
@@ -116,15 +164,14 @@ func GetInflationHandler(cfg config.Config, storage keyValueStorage) func(http.R
 	return func(w http.ResponseWriter, r *http.Request) {
 		inflation, err := storage.GetValue(cfg.Storage.InflationKey)
 		if err != nil {
-			log.Error().Err(err).Send()
-			w.WriteHeader(http.StatusBadRequest)
+			badRequest(w, err)
 			return
 		}
 
 		setHeaders(w)
 
 		if err := json.NewEncoder(w).Encode(inflationResponse{Inflation: inflation}); err != nil {
-			log.Error().Err(err).Send()
+			badRequest(w, err)
 		}
 	}
 }
@@ -143,7 +190,7 @@ func GetParamsHandler(cfg config.Config) func(http.ResponseWriter, *http.Request
 				BlocksPerYear:       cfg.Genesis.BlocksPerDay,
 			},
 		}); err != nil {
-			log.Error().Err(err).Send()
+			badRequest(w, err)
 		}
 	}
 }
@@ -159,6 +206,11 @@ func formatSupply(supply string) (string, error) {
 	formattedSupply.Div(bigSupply, divisor)
 
 	return formattedSupply.String(), nil
+}
+
+func badRequest(w http.ResponseWriter, err error) {
+	log.Error().Err(err).Send()
+	w.WriteHeader(http.StatusBadRequest)
 }
 
 func setHeaders(w http.ResponseWriter) {
@@ -195,7 +247,19 @@ type supplyResponse struct {
 	Supply string `json:"supply"`
 }
 
+type statsResponse struct {
+	Inflation valueAtHeight `json:"inflation"`
+	APR       valueAtHeight `json:"apr"`
+	Supply    valueAtHeight `json:"supply"`
+}
+
+type valueAtHeight struct {
+	Value  string `json:"value"`
+	Height int64  `json:"height"`
+}
+
 type keyValueStorage interface {
 	SetValue(key, value string) error
 	GetValue(key string) (string, error)
+	GetInt64Value(key string) (int64, error)
 }

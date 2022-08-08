@@ -73,6 +73,10 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 			return fmt.Errorf("failed to set value %s for key %s", inflation.String(), cfg.Storage.InflationKey)
 		}
 
+		if err := storage.SetInt64Value(cfg.Storage.InflationHeightKey, latestCudosBlock); err != nil {
+			return fmt.Errorf("failed to set value %d for key %s", latestCudosBlock, cfg.Storage.InflationHeightKey)
+		}
+
 		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancelFunc()
 
@@ -98,6 +102,10 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 
 		if err := storage.SetValue(cfg.Storage.SupplyKey, currentTotalSupply.String()); err != nil {
 			return fmt.Errorf("failed to set value %s for key %s", currentTotalSupply.String(), cfg.Storage.SupplyKey)
+		}
+
+		if err := storage.SetInt64Value(cfg.Storage.SupplyHeightKey, latestCudosBlock); err != nil {
+			return fmt.Errorf("failed to set value %d for key %s", latestCudosBlock, cfg.Storage.SupplyHeightKey)
 		}
 
 		return nil

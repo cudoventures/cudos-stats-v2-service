@@ -68,6 +68,7 @@ func main() {
 	http.HandleFunc("/cosmos/bank/v1beta1/supply", handlers.GetSupplyHandler(cfg, keyValueStorage))
 	http.HandleFunc("/circulating-supply", handlers.GetCircSupplyTextHandler(cfg, keyValueStorage))
 	http.HandleFunc("/json/circulating-supply", handlers.GetCircSupplyJSONHandler(cfg, keyValueStorage))
+	http.HandleFunc("/stats", handlers.GetStatsHandler(cfg, keyValueStorage))
 
 	log.Info().Msg(fmt.Sprintf("Listening on port: %d", cfg.Port))
 

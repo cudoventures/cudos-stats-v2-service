@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"strconv"
 )
 
 type storage struct {
@@ -35,4 +36,16 @@ func (s *storage) GetOrDefaultValue(key, defaultValue string) (string, error) {
 		return defaultValue, nil
 	}
 	return value, err
+}
+
+func (s *storage) SetInt64Value(key string, value int64) error {
+	return s.SetValue(key, strconv.FormatInt(value, 10))
+}
+
+func (s *storage) GetInt64Value(key string) (int64, error) {
+	value, err := s.GetValue(key)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseInt(value, 10, 64)
 }

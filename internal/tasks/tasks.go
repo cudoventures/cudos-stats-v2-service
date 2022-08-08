@@ -204,6 +204,7 @@ const maxSupply = "10000000000000000000000000000" // 10 billion
 
 type keyValueStorage interface {
 	SetValue(key, value string) error
+	SetInt64Value(key string, value int64) error
 	GetOrDefaultValue(key, defaultValue string) (string, error)
 }
 

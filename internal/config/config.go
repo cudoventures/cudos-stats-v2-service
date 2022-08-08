@@ -50,9 +50,12 @@ type Config struct {
 	} `yaml:"calculation"`
 	Storage struct {
 		APRKey              string `yaml:"apr_key"`
+		APRHeightKey        string `yaml:"apr_height_key"`
 		AnnualProvisionsKey string `yaml:"annual_provisions"`
 		InflationKey        string `yaml:"inflation_key"`
+		InflationHeightKey  string `yaml:"inflation_height_key"`
 		AllTokensSupplyKey  string `yaml:"all_tokens_supply_key"`
 		SupplyKey           string `yaml:"supply_key"`
+		SupplyHeightKey     string `yaml:"supply_height_key"`
 	} `yaml:"storage"`
 }
