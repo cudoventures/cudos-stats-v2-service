@@ -21,3 +21,6 @@ http://127.0.0.1:3001/cosmos/bank/v1beta1/supply
 ### For coinmarketcap and other similar integrations:
 http://127.0.0.1:3001/circulating-supply - coinmarketcap endpoint that is returning current circulating supply as decimal.\
 http://127.0.0.1:3001/json/circulating-supply - endpoint that is returning current circulating supply as json.
+
+### For explorer v2
+http://127.0.0.1:3001/stats - Inflation, APR, Supply
