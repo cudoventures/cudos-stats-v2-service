@@ -37,9 +37,7 @@ func ExecuteTasks(cfg config.Config, nodeClient *remote.Node, stakingClient stak
 	return nil
 }
 
-func RegisterTasks(cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient bankQueryClient, storage keyValueStorage) error {
-	scheduler := gocron.NewScheduler(time.UTC)
-
+func RegisterTasks(scheduler *gocron.Scheduler, cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient bankQueryClient, storage keyValueStorage) error {
 	genesisState, err := createGenesisState(cfg)
 	if err != nil {
 		return err

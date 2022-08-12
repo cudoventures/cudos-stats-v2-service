@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	cudosapp "github.com/CudoVentures/cudos-node/app"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
@@ -15,6 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/forbole/juno/v2/node/remote"
+	"github.com/go-co-op/gocron"
 	"github.com/rs/zerolog/log"
 )
 
@@ -54,11 +56,14 @@ func main() {
 	}
 
 	log.Info().Msg("Registering tasks")
+	scheduler := gocron.NewScheduler(time.UTC)
 
-	if err := tasks.RegisterTasks(cfg, nodeClient, stakingClient, bankingRestClient, keyValueStorage); err != nil {
+	if err := tasks.RegisterTasks(scheduler, cfg, nodeClient, stakingClient, bankingRestClient, keyValueStorage); err != nil {
 		log.Fatal().Err(fmt.Errorf("error while registering tasks: %s", err)).Send()
 		return
 	}
+
+	scheduler.StartAsync()
 
 	log.Info().Msg("Registering http handlers")
 
