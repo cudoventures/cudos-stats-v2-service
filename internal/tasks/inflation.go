@@ -85,8 +85,11 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 			return fmt.Errorf("error while getting total supply: %s", err)
 		}
 
+		var cudosNetworkTotalSupply sdk.Int
+
 		for i := 0; i < len(totalSupply.Supply); i++ {
 			if totalSupply.Supply[i].Denom == cfg.Genesis.MintDenom {
+				cudosNetworkTotalSupply = totalSupply.Supply[i].Amount
 				totalSupply.Supply[i].Amount = currentTotalSupply
 			}
 		}
@@ -97,7 +100,7 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 		}
 
 		if err := storage.SetValue(cfg.Storage.AllTokensSupplyKey, string(totalSupplyJSON)); err != nil {
-			return fmt.Errorf("failed to set value %s for key %s", currentTotalSupply.String(), cfg.Storage.AllTokensSupplyKey)
+			return fmt.Errorf("failed to set value %s for key %s", string(totalSupplyJSON), cfg.Storage.AllTokensSupplyKey)
 		}
 
 		if err := storage.SetValue(cfg.Storage.SupplyKey, currentTotalSupply.String()); err != nil {
@@ -106,6 +109,10 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 
 		if err := storage.SetInt64Value(cfg.Storage.SupplyHeightKey, latestCudosBlock); err != nil {
 			return fmt.Errorf("failed to set value %d for key %s", latestCudosBlock, cfg.Storage.SupplyHeightKey)
+		}
+
+		if err := storage.SetValue(cfg.Storage.CudosNetworkTotalSupplyKey, cudosNetworkTotalSupply.String()); err != nil {
+			return fmt.Errorf("failed to set value %s for key %s", cudosNetworkTotalSupply.String(), cfg.Storage.CudosNetworkTotalSupplyKey)
 		}
 
 		return nil

@@ -195,6 +195,30 @@ func GetParamsHandler(cfg config.Config) func(http.ResponseWriter, *http.Request
 	}
 }
 
+func GetCudosNetworkTotalSupply(cfg config.Config, storage keyValueStorage) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		supply, err := storage.GetValue(cfg.Storage.CudosNetworkTotalSupplyKey)
+		if err != nil {
+			badRequest(w, err)
+			return
+		}
+
+		formattedSupply, err := formatSupply(supply)
+		if err != nil {
+			badRequest(w, err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusOK)
+
+		if _, err := w.Write([]byte(formattedSupply)); err != nil {
+			badRequest(w, err)
+			return
+		}
+	}
+}
+
 func formatSupply(supply string) (string, error) {
 	bigSupply, ok := new(big.Int).SetString(supply, 10)
 	if !ok || bigSupply == nil {

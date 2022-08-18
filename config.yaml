@@ -37,4 +37,5 @@ storage:
   all_tokens_supply_key: all_tokens_supply
   supply_key: supply
   supply_height_key: supply_height
+  cudos_network_total_supply_key: cudos_network_total_supply
 
