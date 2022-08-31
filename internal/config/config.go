@@ -26,14 +26,21 @@ func NewConfig(configPath string) (Config, error) {
 }
 
 type Config struct {
-	Port    int `yaml:"port"`
-	Genesis struct {
+	Port             int `yaml:"port"`
+	InflationGenesis struct {
 		InitialHeight         int64  `yaml:"initial_height"`
 		NormTimePassed        string `yaml:"norm_time_passed"`
 		BlocksPerDay          string `yaml:"blocks_per_day"`
 		MintDenom             string `yaml:"mint_denom"`
 		GravityAccountAddress string `yaml:"gravity_account_address"`
-	} `yaml:"genesis"`
+	} `yaml:"inflation_genesis"`
+	APRGenesis struct {
+		InitialHeight         int64  `yaml:"initial_height"`
+		NormTimePassed        string `yaml:"norm_time_passed"`
+		BlocksPerDay          string `yaml:"blocks_per_day"`
+		MintDenom             string `yaml:"mint_denom"`
+		GravityAccountAddress string `yaml:"gravity_account_address"`
+	} `yaml:"apr_genesis"`
 	Cudos struct {
 		NodeDetails remote.Details `yaml:"node"`
 		REST        struct {
