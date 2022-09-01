@@ -37,6 +37,7 @@ type Config struct {
 	APRGenesis struct {
 		InitialHeight         int64  `yaml:"initial_height"`
 		NormTimePassed        string `yaml:"norm_time_passed"`
+		RealBlocksPerDay      string `yaml:"real_blocks_per_day"`
 		BlocksPerDay          string `yaml:"blocks_per_day"`
 		MintDenom             string `yaml:"mint_denom"`
 		GravityAccountAddress string `yaml:"gravity_account_address"`
