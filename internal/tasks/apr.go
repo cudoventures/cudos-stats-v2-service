@@ -9,7 +9,6 @@ import (
 	cudoMintTypes "github.com/CudoVentures/cudos-node/x/cudoMint/types"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/forbole/juno/v2/node/remote"
 )
