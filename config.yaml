@@ -6,8 +6,8 @@ inflation_genesis:
   mint_denom: acudos
   gravity_account_address: cudos16n3lc7cywa68mg50qhp847034w88pntq8823tx
 apr_genesis:
-  initial_height: 1068800
-  norm_time_passed: 0.701091267050712000
+  initial_height: 1069391
+  norm_time_passed: 0.701184759708210690
   real_blocks_per_day: 14048
   blocks_per_day: 12345
   mint_denom: acudos
