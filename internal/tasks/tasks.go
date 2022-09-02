@@ -104,7 +104,7 @@ func getEthAccountsBalanceAtBlock(client *ethclient.Client, tokenAddress string,
 	return totalBalance, nil
 }
 
-func calculateMintedTokensSinceHeight(mintParams cudoMintTypes.GenesisState, genesisInitialHeight, sinceBlock int64, periodDays float64) (sdk.Int, error) {
+func calculateMintedTokensSinceHeight(mintParams cudoMintTypes.GenesisState, genesisInitialHeight, sinceBlock int64, periodDays float64, realBlocksPerDay sdk.Int) (sdk.Int, error) {
 	minter := mintParams.Minter
 	params := mintParams.Params
 
@@ -115,7 +115,11 @@ func calculateMintedTokensSinceHeight(mintParams cudoMintTypes.GenesisState, gen
 	minter.NormTimePassed = updateNormTimePassed(mintParams, genesisInitialHeight, sinceBlock)
 
 	mintAmountInt := sdk.NewInt(0)
-	totalBlocks := int64(float64(mintParams.Params.BlocksPerDay.Int64()) * periodDays)
+
+	// We have to predict what the block count will be periodDays from now. Because
+	// mintParams.Params.BlocksPerDay is intentionally wrong, using that would give
+	// us the wrong result. We use the "real blocks per day" instead.
+	totalBlocks := int64(float64(realBlocksPerDay.Int64()) * periodDays)
 
 	for height := int64(1); height <= totalBlocks; height++ {
 		if minter.NormTimePassed.GT(finalNormTimePassed) {

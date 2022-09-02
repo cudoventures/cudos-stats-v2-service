@@ -30,7 +30,12 @@ func getCalculateAPRHandler(genesisState cudoMintTypes.GenesisState, cfg config.
 			return fmt.Errorf("failed to get last block height %s", err)
 		}
 
-		mintAmountInt, err := calculateMintedTokensSinceHeight(genesisState, cfg.APRGenesis.InitialHeight, latestBlockHeight, 30.43)
+		realBlocksPerDay, ok := sdk.NewIntFromString(cfg.APRGenesis.RealBlocksPerDay)
+		if !ok {
+			return fmt.Errorf("failed to parse RealBlocksPerDay %s", cfg.APRGenesis.RealBlocksPerDay)
+		}
+
+		mintAmountInt, err := calculateMintedTokensSinceHeight(genesisState, cfg.APRGenesis.InitialHeight, latestBlockHeight, 30.43, realBlocksPerDay)
 		if err != nil {
 			return fmt.Errorf("failed to calculated minted tokens: %s", err)
 		}
