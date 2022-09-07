@@ -88,7 +88,7 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 		var cudosNetworkTotalSupply sdk.Int
 
 		for i := 0; i < len(totalSupply.Supply); i++ {
-			if totalSupply.Supply[i].Denom == cfg.Genesis.MintDenom {
+			if totalSupply.Supply[i].Denom == cfg.InflationGenesis.MintDenom {
 				cudosNetworkTotalSupply = totalSupply.Supply[i].Amount
 				totalSupply.Supply[i].Amount = currentTotalSupply
 			}
@@ -161,9 +161,9 @@ func getCudosNetworkCirculatingSupplyAtHeight(height int64, bankingClient bankQu
 	var gravityModuleBalance sdk.Coin
 
 	for {
-		gravityModuleBalance, err = bankingClient.GetBalance(ctx, height, cfg.Genesis.GravityAccountAddress, cfg.Genesis.MintDenom)
+		gravityModuleBalance, err = bankingClient.GetBalance(ctx, height, cfg.InflationGenesis.GravityAccountAddress, cfg.InflationGenesis.MintDenom)
 		if err != nil {
-			return sdk.Int{}, fmt.Errorf("error while getting %s balance: %s", cfg.Genesis.GravityAccountAddress, err)
+			return sdk.Int{}, fmt.Errorf("error while getting %s balance: %s", cfg.InflationGenesis.GravityAccountAddress, err)
 		}
 
 		if !gravityModuleBalance.Amount.IsZero() {
@@ -174,7 +174,7 @@ func getCudosNetworkCirculatingSupplyAtHeight(height int64, bankingClient bankQu
 	}
 
 	for i := 0; i < len(totalSupply.Supply); i++ {
-		if totalSupply.Supply[i].Denom == cfg.Genesis.MintDenom {
+		if totalSupply.Supply[i].Denom == cfg.InflationGenesis.MintDenom {
 			return totalSupply.Supply[i].Amount.Sub(gravityModuleBalance.Amount), nil
 		}
 	}

@@ -8,11 +8,14 @@ import (
 
 	cudoMintTypes "github.com/CudoVentures/cudos-node/x/cudoMint/types"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/forbole/juno/v2/node/remote"
 )
 
-func getCalculateAPRHandler(genesisState cudoMintTypes.GenesisState, cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, storage keyValueStorage) func() error {
+func getCalculateAPRHandler(genesisState cudoMintTypes.GenesisState, cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient,
+	distClient distributionQueryClient, storage keyValueStorage) func() error {
+
 	return func() error {
 		if genesisState.Minter.NormTimePassed.GT(finalNormTimePassed) {
 			return nil
@@ -27,7 +30,12 @@ func getCalculateAPRHandler(genesisState cudoMintTypes.GenesisState, cfg config.
 			return fmt.Errorf("failed to get last block height %s", err)
 		}
 
-		mintAmountInt, err := calculateMintedTokensSinceHeight(genesisState, cfg.Genesis.InitialHeight, latestBlockHeight, 30.43)
+		realBlocksPerDay, ok := sdk.NewIntFromString(cfg.APRGenesis.RealBlocksPerDay)
+		if !ok {
+			return fmt.Errorf("failed to parse RealBlocksPerDay %s", cfg.APRGenesis.RealBlocksPerDay)
+		}
+
+		mintAmountInt, err := calculateMintedTokensSinceHeight(genesisState, cfg.APRGenesis.InitialHeight, latestBlockHeight, 30.43, realBlocksPerDay)
 		if err != nil {
 			return fmt.Errorf("failed to calculated minted tokens: %s", err)
 		}
@@ -41,6 +49,22 @@ func getCalculateAPRHandler(genesisState cudoMintTypes.GenesisState, cfg config.
 		}
 
 		apr := mintAmountInt.ToDec().Quo(res.Pool.BondedTokens.ToDec()).MulInt64(int64(12))
+
+		parametersResponse, err := distClient.GetParams(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get distribution parameters: %s", err)
+		}
+
+		communityTax, err := sdk.NewDecFromStr(parametersResponse.CommunityTax)
+		if err != nil {
+			return fmt.Errorf("failed to parse community tax (%s): %s", parametersResponse.CommunityTax, err)
+		}
+
+		communityTaxPortion := sdk.NewDec(1).Sub(communityTax)
+
+		if communityTaxPortion.GT(sdk.NewDec(0)) {
+			apr = apr.Mul(communityTaxPortion)
+		}
 
 		if err := storage.SetValue(cfg.Storage.APRKey, apr.String()); err != nil {
 			return fmt.Errorf("failed to set value %s for key %s", apr.String(), cfg.Storage.APRKey)

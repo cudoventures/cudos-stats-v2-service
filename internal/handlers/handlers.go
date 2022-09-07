@@ -182,12 +182,12 @@ func GetParamsHandler(cfg config.Config) func(http.ResponseWriter, *http.Request
 
 		if err := json.NewEncoder(w).Encode(paramsResponse{
 			Params: params{
-				MintDenom:           cfg.Genesis.MintDenom,
+				MintDenom:           cfg.InflationGenesis.MintDenom,
 				InflationRateChange: "0.0",
 				InflationMax:        "0.0",
 				InflationMin:        "0.0",
 				GoalBonded:          "0.0",
-				BlocksPerYear:       cfg.Genesis.BlocksPerDay,
+				BlocksPerYear:       cfg.InflationGenesis.BlocksPerDay,
 			},
 		}); err != nil {
 			badRequest(w, err)

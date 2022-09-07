@@ -9,6 +9,7 @@ import (
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/handlers"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/rest/bank"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/rest/distribution"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/storage"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/tasks"
 	"github.com/cosmos/cosmos-sdk/simapp/params"
@@ -45,12 +46,13 @@ func main() {
 
 	stakingClient := stakingtypes.NewQueryClient(source.GrpcConn)
 	bankingRestClient := bank.NewRestClient(cfg.Cudos.REST.Address)
+	distributionRestClient := distribution.NewRestClient(cfg.Cudos.REST.Address)
 
 	keyValueStorage := storage.NewStorage()
 
 	log.Info().Msg("Executing tasks")
 
-	if err := tasks.ExecuteTasks(cfg, nodeClient, stakingClient, bankingRestClient, keyValueStorage); err != nil {
+	if err := tasks.ExecuteTasks(cfg, nodeClient, stakingClient, bankingRestClient, distributionRestClient, keyValueStorage); err != nil {
 		log.Fatal().Err(fmt.Errorf("error while executing tasks: %s", err)).Send()
 		return
 	}
@@ -58,7 +60,7 @@ func main() {
 	log.Info().Msg("Registering tasks")
 	scheduler := gocron.NewScheduler(time.UTC)
 
-	if err := tasks.RegisterTasks(scheduler, cfg, nodeClient, stakingClient, bankingRestClient, keyValueStorage); err != nil {
+	if err := tasks.RegisterTasks(scheduler, cfg, nodeClient, stakingClient, bankingRestClient, distributionRestClient, keyValueStorage); err != nil {
 		log.Fatal().Err(fmt.Errorf("error while registering tasks: %s", err)).Send()
 		return
 	}

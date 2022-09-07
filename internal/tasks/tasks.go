@@ -10,6 +10,7 @@ import (
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/config"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/erc20"
 	"github.com/CudoVentures/cudos-stats-v2-service/internal/rest/bank"
+	"github.com/CudoVentures/cudos-stats-v2-service/internal/rest/distribution"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -20,32 +21,46 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func ExecuteTasks(cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient bankQueryClient, storage keyValueStorage) error {
-	genesisState, err := createGenesisState(cfg)
+func ExecuteTasks(cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient bankQueryClient,
+	distClient distributionQueryClient, storage keyValueStorage) error {
+
+	inflationGenesisState, err := createGenesisState(cfg.InflationGenesis.NormTimePassed, cfg.InflationGenesis.BlocksPerDay)
 	if err != nil {
 		return err
 	}
 
-	if err := getCalculateInflationHandler(*genesisState, cfg, nodeClient, bankingClient, storage)(); err != nil {
+	if err := getCalculateInflationHandler(*inflationGenesisState, cfg, nodeClient, bankingClient, storage)(); err != nil {
 		return fmt.Errorf("inflation calculation failed: %s", err)
 	}
 
-	if err := getCalculateAPRHandler(*genesisState, cfg, nodeClient, stakingClient, storage)(); err != nil {
+	aprGenesisState, err := createGenesisState(cfg.APRGenesis.NormTimePassed, cfg.APRGenesis.BlocksPerDay)
+	if err != nil {
+		return err
+	}
+
+	if err := getCalculateAPRHandler(*aprGenesisState, cfg, nodeClient, stakingClient, distClient, storage)(); err != nil {
 		return fmt.Errorf("apr calculation failed: %s", err)
 	}
 
 	return nil
 }
 
-func RegisterTasks(scheduler *gocron.Scheduler, cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient bankQueryClient, storage keyValueStorage) error {
-	genesisState, err := createGenesisState(cfg)
+func RegisterTasks(scheduler *gocron.Scheduler, cfg config.Config, nodeClient *remote.Node, stakingClient stakingtypes.QueryClient, bankingClient bankQueryClient,
+	distClient distributionQueryClient, storage keyValueStorage) error {
+
+	inflationGenesisState, err := createGenesisState(cfg.InflationGenesis.NormTimePassed, cfg.InflationGenesis.BlocksPerDay)
+	if err != nil {
+		return err
+	}
+
+	aprGenesisState, err := createGenesisState(cfg.APRGenesis.NormTimePassed, cfg.APRGenesis.BlocksPerDay)
 	if err != nil {
 		return err
 	}
 
 	if _, err := scheduler.Every(1).Day().At("00:00").Do(func() {
-		watchMethod(getCalculateInflationHandler(*genesisState, cfg, nodeClient, bankingClient, storage))
-		watchMethod(getCalculateAPRHandler(*genesisState, cfg, nodeClient, stakingClient, storage))
+		watchMethod(getCalculateInflationHandler(*inflationGenesisState, cfg, nodeClient, bankingClient, storage))
+		watchMethod(getCalculateAPRHandler(*aprGenesisState, cfg, nodeClient, stakingClient, distClient, storage))
 	}); err != nil {
 		return fmt.Errorf("scheduler failed to register tasks: %s", err)
 	}
@@ -89,7 +104,7 @@ func getEthAccountsBalanceAtBlock(client *ethclient.Client, tokenAddress string,
 	return totalBalance, nil
 }
 
-func calculateMintedTokensSinceHeight(mintParams cudoMintTypes.GenesisState, genesisInitialHeight, sinceBlock int64, periodDays float64) (sdk.Int, error) {
+func calculateMintedTokensSinceHeight(mintParams cudoMintTypes.GenesisState, genesisInitialHeight, sinceBlock int64, periodDays float64, realBlocksPerDay sdk.Int) (sdk.Int, error) {
 	minter := mintParams.Minter
 	params := mintParams.Params
 
@@ -100,7 +115,11 @@ func calculateMintedTokensSinceHeight(mintParams cudoMintTypes.GenesisState, gen
 	minter.NormTimePassed = updateNormTimePassed(mintParams, genesisInitialHeight, sinceBlock)
 
 	mintAmountInt := sdk.NewInt(0)
-	totalBlocks := int64(float64(mintParams.Params.BlocksPerDay.Int64()) * periodDays)
+
+	// We have to predict what the block count will be periodDays from now. Because
+	// mintParams.Params.BlocksPerDay is intentionally wrong, using that would give
+	// us the wrong result. We use the "real blocks per day" instead.
+	totalBlocks := int64(float64(realBlocksPerDay.Int64()) * periodDays)
 
 	for height := int64(1); height <= totalBlocks; height++ {
 		if minter.NormTimePassed.GT(finalNormTimePassed) {
@@ -164,15 +183,15 @@ func calculateMintedCoins(minter cudoMintTypes.Minter, increment sdk.Dec) sdk.De
 	return (nextStep.Sub(prevStep)).Mul(sdk.NewDec(10).Power(24)) // formula calculates in mil of cudos + converting to acudos
 }
 
-func createGenesisState(cfg config.Config) (*cudoMintTypes.GenesisState, error) {
-	normTimePassed, err := sdk.NewDecFromStr(cfg.Genesis.NormTimePassed)
+func createGenesisState(normTimePassedStr, blocksPerDayStr string) (*cudoMintTypes.GenesisState, error) {
+	normTimePassed, err := sdk.NewDecFromStr(normTimePassedStr)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse NormTimePassed %s: %s", cfg.Genesis.NormTimePassed, err)
+		return nil, fmt.Errorf("failed to parse NormTimePassed %s: %s", normTimePassedStr, err)
 	}
 
-	blocksPerDay, ok := sdk.NewIntFromString(cfg.Genesis.BlocksPerDay)
+	blocksPerDay, ok := sdk.NewIntFromString(blocksPerDayStr)
 	if !ok {
-		return nil, fmt.Errorf("failed to parse BlocksPerDay %s", cfg.Genesis.BlocksPerDay)
+		return nil, fmt.Errorf("failed to parse BlocksPerDay %s", blocksPerDayStr)
 	}
 
 	return cudoMintTypes.NewGenesisState(cudoMintTypes.NewMinter(sdk.NewDec(0), normTimePassed), cudoMintTypes.NewParams(blocksPerDay)), nil
@@ -209,4 +228,8 @@ type keyValueStorage interface {
 type bankQueryClient interface {
 	GetTotalSupply(ctx context.Context, height int64) (bank.TotalSupplyResponse, error)
 	GetBalance(ctx context.Context, height int64, address, denom string) (sdk.Coin, error)
+}
+
+type distributionQueryClient interface {
+	GetParams(ctx context.Context) (distribution.ParametersResponse, error)
 }
