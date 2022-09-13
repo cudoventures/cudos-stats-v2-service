@@ -18,6 +18,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/forbole/juno/v2/node/remote"
 	"github.com/go-co-op/gocron"
+	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
@@ -69,18 +70,26 @@ func main() {
 
 	log.Info().Msg("Registering http handlers")
 
-	http.HandleFunc("/cosmos/mint/v1beta1/annual_provisions", handlers.GetAnnualProvisionsHandler(cfg, keyValueStorage))
-	http.HandleFunc("/cosmos/mint/v1beta1/inflation", handlers.GetInflationHandler(cfg, keyValueStorage))
-	http.HandleFunc("/cosmos/mint/v1beta1/params", handlers.GetParamsHandler(cfg))
-	http.HandleFunc("/cosmos/bank/v1beta1/supply", handlers.GetSupplyHandler(cfg, keyValueStorage))
-	http.HandleFunc("/circulating-supply", handlers.GetCircSupplyTextHandler(cfg, keyValueStorage))
-	http.HandleFunc("/json/circulating-supply", handlers.GetCircSupplyJSONHandler(cfg, keyValueStorage))
-	http.HandleFunc("/total-supply", handlers.GetCudosNetworkTotalSupply(cfg, keyValueStorage))
-	http.HandleFunc("/stats", handlers.GetStatsHandler(cfg, keyValueStorage))
+	r := mux.NewRouter()
+	r.HandleFunc("/cosmos/mint/v1beta1/annual_provisions", handlers.GetAnnualProvisionsHandler(cfg, keyValueStorage))
+	r.HandleFunc("/cosmos/mint/v1beta1/inflation", handlers.GetInflationHandler(cfg, keyValueStorage))
+	r.HandleFunc("/cosmos/mint/v1beta1/params", handlers.GetParamsHandler(cfg))
+	r.HandleFunc("/cosmos/bank/v1beta1/supply", handlers.GetSupplyHandler(cfg, keyValueStorage))
+	r.HandleFunc("/circulating-supply", handlers.GetCircSupplyTextHandler(cfg, keyValueStorage))
+	r.HandleFunc("/json/circulating-supply", handlers.GetCircSupplyJSONHandler(cfg, keyValueStorage))
+	r.HandleFunc("/total-supply", handlers.GetCudosNetworkTotalSupply(cfg, keyValueStorage))
+	r.HandleFunc("/stats", handlers.GetStatsHandler(cfg, keyValueStorage))
 
 	log.Info().Msg(fmt.Sprintf("Listening on port: %d", cfg.Port))
+	srv := &http.Server{
+		Handler: r,
+		Addr:    fmt.Sprintf(":%d", cfg.Port),
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), nil); err != nil {
+	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal().Err(fmt.Errorf("error while listening: %s", err))
 	}
 }
