@@ -34,10 +34,10 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 			return err
 		}
 
-		ethCurrentSupply, err := getEthCirculatingSupplyAtHeight(latestEthBlock, client, cfg)
-		if err != nil {
-			return err
-		}
+		// ethCurrentSupply, err := getEthCirculatingSupplyAtHeight(latestEthBlock, client, cfg)
+		// if err != nil {
+		// 	return err
+		// }
 
 		latestCudosBlock, err := nodeClient.LatestHeight()
 		if err != nil {
@@ -65,7 +65,8 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 		}
 
 		startTotalSupply := ethStartSupply.Add(cudosStartSupply)
-		currentTotalSupply := ethCurrentSupply.Add(cudosCurrentSupply)
+		// currentTotalSupply := ethCurrentSupply.Add(cudosCurrentSupply)
+		currentTotalSupply := cudosCurrentSupply.Sub(sdk.NewIntWithDecimal(1944669939, 18))
 
 		inflation := currentTotalSupply.Sub(startTotalSupply).ToDec().Quo(startTotalSupply.ToDec())
 
@@ -175,7 +176,7 @@ func getCudosNetworkCirculatingSupplyAtHeight(height int64, bankingClient bankQu
 
 	for i := 0; i < len(totalSupply.Supply); i++ {
 		if totalSupply.Supply[i].Denom == cfg.InflationGenesis.MintDenom {
-			return totalSupply.Supply[i].Amount.Sub(gravityModuleBalance.Amount), nil
+			return totalSupply.Supply[i].Amount, nil
 		}
 	}
 
