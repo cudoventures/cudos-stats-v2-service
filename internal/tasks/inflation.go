@@ -17,22 +17,22 @@ import (
 
 func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg config.Config, nodeClient *remote.Node, bankingClient bankQueryClient, storage keyValueStorage) func() error {
 	return func() error {
-		client, err := ethclient.Dial(cfg.Eth.EthNode)
-		if err != nil {
-			return fmt.Errorf("failed to dial eth node: %s", err)
-		}
+		//client, err := ethclient.Dial(cfg.Eth.EthNode)
+		//if err != nil {
+		//	return fmt.Errorf("failed to dial eth node: %s", err)
+		//}
 
-		latestEthBlock, err := getLatestEthBlock(client)
-		if err != nil {
-			return fmt.Errorf("faield to get latest eth block: %s", err)
-		}
+		//latestEthBlock, err := getLatestEthBlock(client)
+		//if err != nil {
+		//	return fmt.Errorf("faield to get latest eth block: %s", err)
+		//}
 
-		inflationEthStartBlock := big.NewInt(latestEthBlock.Int64() - (cfg.Calculation.InflationSinceDays * ethBlocksPerDay))
+		//inflationEthStartBlock := big.NewInt(latestEthBlock.Int64() - (cfg.Calculation.InflationSinceDays * ethBlocksPerDay))
 
-		ethStartSupply, err := getEthCirculatingSupplyAtHeight(inflationEthStartBlock, client, cfg)
-		if err != nil {
-			return err
-		}
+		//ethStartSupply, err := getEthCirculatingSupplyAtHeight(inflationEthStartBlock, client, cfg)
+		//if err != nil {
+		//	return err
+		//}
 
 		// ethCurrentSupply, err := getEthCirculatingSupplyAtHeight(latestEthBlock, client, cfg)
 		// if err != nil {
@@ -54,21 +54,22 @@ func getCalculateInflationHandler(genesisState cudoMintTypes.GenesisState, cfg c
 			inflationSinceDaysValue--
 		}
 
-		cudosStartSupply, err := getCudosNetworkCirculatingSupplyAtHeight(inflationCudosStartBlock, bankingClient, cfg)
-		if err != nil {
-			return err
-		}
+		//cudosStartSupply, err := getCudosNetworkCirculatingSupplyAtHeight(inflationCudosStartBlock, bankingClient, cfg)
+		//if err != nil {
+		//	return err
+		//}
 
 		cudosCurrentSupply, err := getCudosNetworkCirculatingSupplyAtHeight(latestCudosBlock, bankingClient, cfg)
 		if err != nil {
 			return err
 		}
 
-		startTotalSupply := ethStartSupply.Add(cudosStartSupply)
+		//startTotalSupply := ethStartSupply.Add(cudosStartSupply)
 		// currentTotalSupply := ethCurrentSupply.Add(cudosCurrentSupply)
-		currentTotalSupply := cudosCurrentSupply.Sub(sdk.NewIntWithDecimal(1944669939, 18))
+		currentTotalSupply := cudosCurrentSupply.Sub(sdk.NewIntWithDecimal(1942421346, 18))
 
-		inflation := currentTotalSupply.Sub(startTotalSupply).ToDec().Quo(startTotalSupply.ToDec())
+		//inflation := currentTotalSupply.Sub(startTotalSupply).ToDec().Quo(startTotalSupply.ToDec())
+		inflation := sdk.MustNewDecFromStr("0.01")
 
 		if err := storage.SetValue(cfg.Storage.InflationKey, inflation.String()); err != nil {
 			return fmt.Errorf("failed to set value %s for key %s", inflation.String(), cfg.Storage.InflationKey)
